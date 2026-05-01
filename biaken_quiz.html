@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>目指せびあけん！ビア子のクイズ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+  :root {
+    --black: #111111;
+    --red: #CC0000;
+    --red-dark: #990000;
+    --yellow: #FFCC00;
+    --yellow-dim: #ccaa00;
+    --white: #F5F5F5;
+    --cream: #E8D9B5;
+    --cream-dark: #D4C090;
+    --cream-card: #F0E4C4;
+    --gray: #C8B898;
+    --gray2: #DDD0AA;
+    --text: #2a1f0a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* ヘッダー */
+  #header {
+    width: 100%;
+    background: var(--red);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 3px 0 var(--yellow);
+  }
+  #header h1 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.1rem;
+    color: var(--yellow);
+    letter-spacing: 0.05em;
+    text-shadow: 1px 1px 0 #000;
+  }
+  #progress-text {
+    font-size: 0.75rem;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* プログレスバー */
+  #progress-bar-wrap {
+    width: 100%;
+    height: 5px;
+    background: var(--gray);
+  }
+  #progress-bar {
+    height: 100%;
+    background: var(--yellow);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* メインコンテンツ */
+  #main {
+    width: 100%;
+    max-width: 480px;
+    padding: 0 16px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ビア子エリア */
+  #biako-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  #biako-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+  }
+  #biako-bubble {
+    background: var(--cream-card);
+    border: 2px solid var(--yellow-dim);
+    border-radius: 16px 16px 16px 4px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text);
+    position: relative;
+    flex: 1;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ジャンルバッジ */
+  #genre-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--red);
+    color: var(--yellow);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+  #difficulty {
+    color: var(--yellow);
+    font-size: 0.8rem;
+    margin-left: auto;
+  }
+  #meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* 問題カード */
+  #question-card {
+    background: var(--cream-card);
+    border: 2px solid var(--cream-dark);
+    border-top: 3px solid var(--red);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  #question-number {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.85rem;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  #question-passage {
+    background: var(--cream-dark);
+    border-left: 3px solid var(--red);
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--text);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 12px;
+    display: none;
+  }
+  #question-text {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* 選択肢 */
+  #choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .choice-btn {
+    background: var(--cream-card);
+    border: 2px solid var(--cream-dark);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+    -webkit-appearance: none;
+    width: 100%;
+  }
+  .choice-btn:active { transform: scale(0.98); }
+  .choice-btn.hover-active { border-color: var(--red); background: #f5e8c8; }
+  .choice-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1rem;
+    color: var(--red);
+    flex-shrink: 0;
+    font-weight: 700;
+    min-width: 20px;
+  }
+  .choice-btn.correct {
+    border-color: #228800;
+    background: #d4f0c0;
+    animation: pulse-correct 0.4s ease;
+  }
+  .choice-btn.wrong {
+    border-color: var(--red);
+    background: #f5d0d0;
+    animation: pulse-wrong 0.4s ease;
+  }
+  .choice-btn.reveal-correct {
+    border-color: #228800;
+    background: #d4f0c0;
+  }
+  .choice-btn:disabled { cursor: default; }
+
+  @keyframes pulse-correct {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  @keyframes pulse-wrong {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+  }
+
+  /* 解説エリア */
+  #explanation-area {
+    background: var(--cream-card);
+    border: 2px solid var(--red);
+    border-radius: 12px;
+    padding: 16px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  #explanation-header {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.85rem;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+  #explanation-text {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  /* 次へボタン */
+  #next-btn {
+    background: var(--red);
+    color: var(--yellow);
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    width: 100%;
+    cursor: pointer;
+    display: none;
+    box-shadow: 0 4px 0 var(--red-dark);
+    transition: all 0.15s;
+    -webkit-appearance: none;
+  }
+  #next-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--red-dark);
+  }
+
+  /* ===== スタート画面 ===== */
+  #start-screen {
+    width: 100%;
+    max-width: 480px;
+    padding: 24px 16px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  #start-logo-img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 16px;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.25));
+  }
+  #start-bubble {
+    background: var(--cream-card);
+    border: 2px solid var(--yellow-dim);
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    text-align: center;
+    color: var(--text);
+  }
+  #start-bubble strong { color: var(--red); }
+  #start-btn {
+    background: var(--yellow);
+    color: var(--black);
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 40px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--yellow-dim);
+    transition: all 0.15s;
+    -webkit-appearance: none;
+    width: 100%;
+  }
+  #start-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--yellow-dim);
+  }
+  .german-flag {
+    display: flex;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .german-flag div { flex: 1; }
+  .gf-black { background: #111; }
+  .gf-red { background: var(--red); }
+  .gf-yellow { background: var(--yellow); }
+
+  /* ===== リザルト画面 ===== */
+  #result-screen {
+    width: 100%;
+    max-width: 480px;
+    padding: 24px 16px 40px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  #result-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    color: var(--red);
+    text-shadow: 2px 2px 0 var(--yellow-dim);
+    text-align: center;
+  }
+  #result-score-card {
+    width: 100%;
+    background: var(--cream-card);
+    border: 3px solid var(--yellow-dim);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+  }
+  #result-score {
+    font-family: 'Oswald', sans-serif;
+    font-size: 4rem;
+    color: var(--red);
+    line-height: 1;
+  }
+  #result-score span { font-size: 1.5rem; color: var(--text); }
+  #result-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 8px;
+    color: var(--text);
+  }
+  #result-biako {
+    width: 140px;
+    filter: drop-shadow(0 4px 12px rgba(204,0,0,0.3));
+  }
+  #result-comment {
+    background: var(--cream-card);
+    border: 2px solid var(--yellow-dim);
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    text-align: center;
+    width: 100%;
+    color: var(--text);
+  }
+  #result-comment strong { color: var(--red); }
+  #retry-btn {
+    background: var(--red);
+    color: var(--yellow);
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--red-dark);
+    -webkit-appearance: none;
+  }
+
+  /* ===== 文章問題の複数設問エリア ===== */
+  #group-questions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .group-q-block {
+    background: var(--cream-card);
+    border: 2px solid var(--cream-dark);
+    border-top: 3px solid var(--red);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .group-q-label {
+    font-family: 'Oswald', sans-serif;
+    color: var(--red);
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .group-q-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .group-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ===== グループ解説 ===== */
+  .group-explanation-block {
+    background: var(--cream-dark);
+    border-left: 3px solid var(--red);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text);
+    display: none;
+  }
+  .group-explanation-header {
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ヘッダー（クイズ中のみ表示） -->
+<div id="header" style="display:none;">
+  <h1>🍺 びあけん 2級</h1>
+  <div id="progress-text">1 / 100</div>
+</div>
+<div id="progress-bar-wrap" style="display:none;">
+  <div id="progress-bar"></div>
+</div>
+
+<!-- ===== スタート画面 ===== -->
+<div id="start-screen">
+  <img id="start-logo-img" src="title.png" alt="ビア子のびあけん2級クイズ">
+  <div id="start-bubble">
+    <strong>ワタシ、ビールの妖精ビア子です！</strong><br>
+    これからアナタをびあけんに合格させるために頑張ります！<br>
+    いわばトレーナーというやつです。<br>
+    アナタはウマ娘で言うウマ娘です！<br><br>
+    目指せ有馬記念！！🏆<br><br>
+    <small style="color:#888;">全100問 / 70点以上で合格</small>
+  </div>
+  <button id="start-btn" onclick="startQuiz()">START QUIZ !</button>
+</div>
+
+<!-- ===== クイズ画面 ===== -->
+<div id="main" style="display:none;">
+  <div id="biako-area">
+    <img id="biako-img" src="biako_normal.png" alt="ビア子">
+    <div id="biako-bubble">問題を読んで、答えを選んでね！</div>
+  </div>
+
+  <div id="meta-row">
+    <div id="genre-badge">❶ 基本・原料</div>
+    <div id="difficulty">★★★</div>
+  </div>
+
+  <!-- 通常問題 -->
+  <div id="normal-question-area">
+    <div id="question-card">
+      <div id="question-number">Q1</div>
+      <div id="question-passage"></div>
+      <div id="question-text"></div>
+    </div>
+    <div id="choices"></div>
+    <div id="explanation-area">
+      <div id="explanation-header">📖 解説</div>
+      <div id="explanation-text"></div>
+    </div>
+  </div>
+
+  <!-- 文章グループ問題 -->
+  <div id="group-question-area" style="display:none;">
+    <div id="question-card-group">
+      <div id="question-passage-group" style="background:var(--cream-dark);border-left:3px solid var(--red);padding:10px 12px;font-size:0.82rem;line-height:1.7;color:var(--text);border-radius:0 8px 8px 0;margin-bottom:4px;"></div>
+    </div>
+    <div id="group-questions"></div>
+    <div id="group-explanation-area" style="display:none;">
+      <div id="explanation-header-group" style="font-family:'Oswald',sans-serif;font-size:0.85rem;color:var(--red);font-weight:700;margin-bottom:8px;letter-spacing:0.05em;">📖 解説</div>
+    </div>
+  </div>
+
+  <button id="next-btn" onclick="nextQuestion()">次の問題へ →</button>
+</div>
+
+<!-- ===== リザルト画面 ===== -->
+<div id="result-screen">
+  <div id="result-title">RESULT 🍺</div>
+  <div class="german-flag"><div class="gf-black"></div><div class="gf-red"></div><div class="gf-yellow"></div></div>
+  <img id="result-biako" src="biako_normal.png" alt="ビア子">
+  <div id="result-score-card">
+    <div id="result-score">0<span> / 100点</span></div>
+    <div id="result-label"></div>
+  </div>
+  <div id="result-comment"></div>
+  <button id="retry-btn" onclick="retryQuiz()">もう一度チャレンジ！</button>
+</div>
+
+<script>
+// =============================
+// 問題データ
+// 通常問題: { type:'single', qNum, genre, difficulty, text, choices, answer, explanation }
+// 文章問題: { type:'group', genre, passage, qs:[{ qNum, difficulty, text, choices, answer, explanation }] }
+// =============================
+const QUESTIONS = [
+  // ===== ❶ 基本・原料 =====
+  {
+    type: 'single',
+    qNum: 'Q1', genre: '❶ 基本・原料', difficulty: '★★★',
+    text: 'ビールのように、原料に含まれるデンプンが糖化されて糖が生成され、その後に糖が発酵する酒を何というか、次の選択肢より選べ。',
+    choices: ['並行複発酵酒', '単行複発酵酒', '並行複蒸留酒', '単行複蒸留酒'],
+    answer: 1,
+    explanation: 'デンプンの糖化と糖の発酵が「順番に（単行）」かつ「2段階（複）」で行われる酒が「単行複発酵酒」。ビールがその代表例。日本酒は糖化と発酵が同時進行する「並行複発酵酒」なので混同しないように注意！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q2', genre: '❶ 基本・原料', difficulty: '★★★',
+    text: '2018年4月の酒税法改正で、新たに追加となった副原料（果実やコリアンダー等香味料）のビールでの使用は、麦芽重量の何％まで認められているか、次の選択肢より選べ。',
+    choices: ['3％', '5％', '7％', '10％'],
+    answer: 1,
+    explanation: '2018年の酒税法改正で、果実・香辛料・ハーブ・花などの香味料がビールの副原料として認められた。その使用量は麦芽重量の5%以内。これによりクラフトビールの多様化が進んだ。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q3', genre: '❶ 基本・原料', difficulty: '★★☆',
+    text: '新ジャンル（第3のビール）の酒税法上の品目は、2023年10月施行の改正酒税法により何になったか。次の選択肢より選べ。',
+    choices: ['その他の醸造酒', 'リキュール', '発泡酒', '雑酒'],
+    answer: 2,
+    explanation: '2023年10月の酒税改正で、第3のビール（新ジャンル）は酒税法上「発泡酒」に統合された。これにより「ビール」「発泡酒」の2分類に整理された。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q4', genre: '❶ 基本・原料', difficulty: '★★☆',
+    text: '日本の表示基準における「生ビール」を正しく説明している英語を、次の選択肢より選べ。',
+    choices: ['draft beer', 'keg beer', 'pasteurized beer', 'unpasteurized beer'],
+    answer: 3,
+    explanation: '日本の「生ビール」とは、熱処理（パスチャライズ）をしていないビールのこと。英語では「unpasteurized beer」が正確な表現。「draft beer」は樽生を意味し、国によって定義が異なる。'
+  },
+  {
+    type: 'group',
+    genre: '❶ 基本・原料',
+    passage: '【文章】\n財務省による「平成29年度税制改正」を受け、2020年10月から( ❶ )年10月にかけて、ビール・発泡酒・新ジャンルの酒税を3段階に分けて改正し、最終的に1KLあたり( ❷ )円に統一する。',
+    qs: [
+      {
+        qNum: 'Q5', difficulty: '★★★',
+        text: '( ❶ )に入る適切な語句を次の選択肢より選べ。',
+        choices: ['2025', '2026', '2027', '2028'],
+        answer: 1,
+        explanation: '酒税改正は2020年・2023年・2026年の3段階。最終段階は2026年10月に1KLあたり155,000円に統一される予定。'
+      },
+      {
+        qNum: 'Q6', difficulty: '★☆☆',
+        text: '( ❷ )に入る適切な語句を次の選択肢より選べ。',
+        choices: ['108,000円', '134,000円', '155,000円', '181,000円'],
+        answer: 2,
+        explanation: '最終的な統一税率は1KLあたり155,000円。現行のビール税率（2023年時点）より低く、発泡酒・新ジャンルより高い水準に収束する。'
+      },
+      {
+        qNum: 'Q7', difficulty: '★☆☆',
+        text: 'ビールは2023年10月に2段階目の減税となったが、1KLあたりの税率はいくらになったか。次の選択肢より選べ。',
+        choices: ['108,000円', '134,000円', '155,000円', '181,000円'],
+        answer: 3,
+        explanation: '2023年10月時点のビール税率は1KLあたり181,000円（2段階目）。最終的に2026年に155,000円になる。数字が多く紛らわしいが、改正の方向は「ビールは減税・発泡酒/新ジャンルは増税」で覚えよう。'
+      }
+    ]
+  },
+  {
+    type: 'single',
+    qNum: 'Q8', genre: '❶ 基本・原料', difficulty: '★★★',
+    text: '2018年4月の改正酒税法に追加された副原料で正しいものを、次の選択肢より選べ。',
+    choices: ['とうもろこし', 'でん粉', '糖類', '蜂蜜'],
+    answer: 3,
+    explanation: '2018年の酒税法改正で新たに副原料として認められたのは、果実・香辛料・ハーブ・花・蜂蜜など。とうもろこし・でん粉・糖類は以前からビール副原料として認められていた。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q9', genre: '❶ 基本・原料', difficulty: '★★☆',
+    text: '大麦の構造で、酵素を合成・分泌したり、発芽に必要なホルモンを伝達する役割がある部分はどこか。適切なものを次の選択肢より選べ。',
+    choices: ['穀皮', '胚', '胚乳', '糊粉層'],
+    answer: 3,
+    explanation: '糊粉層（アリューロン層）はデンプンを貯蔵する胚乳の外側に位置し、発芽時に酵素（アミラーゼ等）を合成・分泌する重要な部位。胚からのホルモン信号を受けて活性化する。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q10', genre: '❶ 基本・原料', difficulty: '★★★',
+    text: '酵母の説明で、誤っているものを次の選択肢より選べ。',
+    choices: [
+      '酵母の種類によって糖の分解や発酵の副産物の生成に違いがある',
+      '酵母は、酒税法上、ビールの原料として定義されている',
+      '酵母は、発酵によりアルコールと炭酸ガスを生成させる役目を果たしている',
+      '酵母は、発酵中にはブドウ糖や麦芽糖などの糖を食べる'
+    ],
+    answer: 1,
+    explanation: '酵母は酒税法上「ビールの原料」として定義されていない（原料はビールのカテゴリ要件に基づく）。酵母は微生物であり、製造過程で使用されるが、法律上の「原料」の列挙には含まれていない。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q11', genre: '❶ 基本・原料', difficulty: '★★★',
+    text: '柑橘系の香りを特徴とするアメリカンホップの代表品種を、次の選択肢より選べ。',
+    choices: ['カスケード', 'テトナング', 'マグナム', 'ハラタウトラディション'],
+    answer: 0,
+    explanation: 'カスケードはアメリカ産ホップの代表品種で、グレープフルーツを思わせる柑橘系の香りが特徴。IPAやペールエールに多用される。テトナング・ハラタウはドイツの伝統品種、マグナムは苦味付け用の高アルファ酸品種。'
+  },
+  // ===== ❷ 製法・スタイル =====
+  {
+    type: 'single',
+    qNum: 'Q12', genre: '❷ 製法・スタイル', difficulty: '★★★',
+    text: '一般的な上面発酵の発酵温度について適切なものを、次の選択肢より選べ。',
+    choices: ['0℃前後', '3〜5℃', '10℃前後', '15〜25℃'],
+    answer: 3,
+    explanation: '上面発酵（エール系）の発酵温度は一般的に15〜25℃。一方、下面発酵（ラガー系）は5〜15℃の低温で行われる。温度の高低が酵母の種類と発酵スタイルに直結している。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q13', genre: '❷ 製法・スタイル', difficulty: '★★★',
+    text: 'ビール醸造における二条大麦の使用理由として適切ではないものを、次の選択肢より選べ。',
+    choices: [
+      '穀粒の大きさと形状が均一で、大粒であるため',
+      '穀皮が厚いため',
+      'デンプン含量が多く、タンパク質含量が適正なため',
+      '発芽力が均一で旺盛なため'
+    ],
+    answer: 1,
+    explanation: '二条大麦は穀皮が薄いのが特徴で、ビール醸造において雑味が出にくい。「穀皮が厚い」は誤り。穀粒が均一で大粒、デンプンが多くタンパク質バランスが良い、発芽力が均一という特徴で選ばれる。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q14', genre: '❷ 製法・スタイル', difficulty: '★★★',
+    text: '下記❶〜❸の特徴をもつビールの原材料名を、次の選択肢より選べ。\n❶: ロースターで200度を超える温度で加熱\n❷: 着色や焦げ味を付けるために使用する\n❸: 麦芽化していない',
+    choices: ['ローステッド・バーレイ', 'ウィートモルト', 'バーレイ・ブレッド', 'ピーテッド・モルト'],
+    answer: 0,
+    explanation: 'ローステッド・バーレイ（焙煎大麦）は、麦芽化せずに直接高温焙煎した原料。スタウトやポーターに使われ、コーヒーのような苦みと濃い黒色を与える。ピーテッドモルトはピート（泥炭）で燻製した麦芽で別物。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q15', genre: '❶ 基本・原料', difficulty: '★☆☆',
+    text: '世界の有名なビール産地のうち、水の硬度がミュンヘン（ドイツ）より低い場所を、次の選択肢より選べ。',
+    choices: ['ドルトムント（ドイツ）', 'ウィーン（オーストリア）', 'バートン・オン・トレント（イギリス）', 'ミルウォーキー（アメリカ）'],
+    answer: 3,
+    explanation: 'ミルウォーキーの水は軟水で、ミュンヘンより硬度が低い。ミュンヘンは中硬水、ドルトムントやバートン・オン・トレントは非常に硬度が高い。ピルスナーにはプルゼニュ（チェコ）の軟水が有名。'
+  },
+  // ===== ❷ 製法・スタイル（続き）=====
+  {
+    type: 'single',
+    qNum: 'Q16', genre: '❷ 製法・スタイル', difficulty: '★★☆',
+    text: '仕込工程におけるマイシェの温度管理について、次の❶糖化温度、❷タンパク休止、❸酵素失活に該当する温度を次の選択肢より選べ。',
+    choices: ['❶:50℃、❷:65℃、❸:75℃', '❶:65℃、❷:50℃、❸:75℃', '❶:50℃、❷:75℃、❸:65℃', '❶:75℃、❷:50℃、❸:65℃'],
+    answer: 1,
+    explanation: '仕込みの温度管理は「タンパク休止→糖化→酵素失活」の順。タンパク休止は約50℃、糖化（アミラーゼ活性）は約65℃、酵素失活は約75℃が目安。この温度帯をしっかり覚えよう！'
+  },
+  {
+    type: 'group',
+    genre: '❷ 製法・スタイル',
+    passage: '【文章】一般的に、ホップが最初に添加されるタイミングは( ❶ )時です。全量投入する方法、分割して投入する方法など投入タイミングは様々です。近年では、発酵以降の工程で再びホップを使用しホップの香りを強烈に与える( ❷ )と呼ばれる手法も注目されています。',
+    qs: [
+      {
+        qNum: 'Q17', difficulty: '★★★',
+        text: '（❶）にあてはまる言葉を選べ。',
+        choices: ['麦芽', '麦芽粉砕', '麦汁ろ過', '麦汁煮沸'],
+        answer: 3,
+        explanation: 'ホップは麦汁煮沸時に最初に投入される。煮沸によってホップのα酸が異性化され苦味成分（イソα酸）になる。煮沸時間が長いほど苦味が強くなり、香りは飛びやすい。'
+      },
+      {
+        qNum: 'Q18', difficulty: '★★★',
+        text: '（❷）にあてはまる言葉を選べ。',
+        choices: ['マッシュホッピング', 'ケトルホッピング', 'レイトホッピング', 'ドライホッピング'],
+        answer: 3,
+        explanation: 'ドライホッピングは発酵後の工程でホップを加える手法。熱を加えないため香り成分が飛ばず、フレッシュで豊かなホップアロマをビールに与えられる。IPAに特によく使われる。'
+      }
+    ]
+  },
+  {
+    type: 'single',
+    qNum: 'Q19', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: '一般的なピルスナーの場合、熟成・貯酒工程でビールはどのように変化するか。誤っているものを次の選択肢より選べ。',
+    choices: ['不快な香りの減少', '炭酸ガスの溶解', '濁りの増加', '余分な炭酸ガスの放出'],
+    answer: 2,
+    explanation: '熟成・貯酒工程では、濁りの原因となるタンパク質やホップ成分が沈殿して「濁りは減少」する。不快な香りが減り、炭酸ガスが溶解し、余分なガスが抜ける。「濁りが増加」は逆で誤り。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q20', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: 'ビールの発酵工程で生成される香気成分である「2-フェニルエタノール」に関する説明として最も適切なものを、次の選択肢より選べ。',
+    choices: ['バナナのようなフルーティな香り', '燻製のような香り', 'バラのような香り', '日本酒のような吟醸香'],
+    answer: 2,
+    explanation: '2-フェニルエタノールはバラのような花の香りを持つ香気成分。酵母がアミノ酸（フェニルアラニン）を代謝して生成する。バナナ香は「酢酸イソアミル」、燻製香はスモークモルト由来。混同しやすいので注意！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q21', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: '製麦工程の「浸麦」後、（❶）℃前後に保たれた発芽室に送られ、「発芽」を進めます。発芽中の大麦は（❷）と呼ばれ、硬かった大麦の粒は、指でつぶせるほどに柔らかくなります。（❶）（❷）の組み合わせを選べ。',
+    choices: ['❶:15、❷:緑麦芽', '❶:25、❷:淡色麦芽', '❶:15、❷:淡色麦芽', '❶:25、❷:緑麦芽'],
+    answer: 0,
+    explanation: '発芽室は約15℃に保たれる。発芽中の大麦は「緑麦芽（グリーンモルト）」と呼ばれ、柔らかくなるのが特徴。その後乾燥（焙煎）されて麦芽（モルト）になる。25℃は高すぎて異常発酵の原因になる。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q22', genre: '❷ 製法・スタイル', difficulty: '★★☆',
+    text: 'ビール製造工程における「熟成・貯酒」に該当する英語を、次の選択肢より選べ。',
+    choices: ['conditioning', 'fermentation', 'mashing', 'milling'],
+    answer: 0,
+    explanation: 'conditioningは熟成・貯酒工程。fermentationは発酵、mashingは糖化（仕込み）、millingは麦芽粉砕。製造工程の英語は頻出なので全部セットで覚えておこう！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q23', genre: '❷ 製法・スタイル', difficulty: '★★★',
+    text: '一般的な下面発酵酵母では、ブドウ糖が最大何個つながったものまで取り込むことができるか、次の選択肢より選べ。',
+    choices: ['１', '２', '３', '４'],
+    answer: 2,
+    explanation: '下面発酵酵母（ラガー酵母）はブドウ糖が3個つながったラフィノースまで取り込める。上面発酵酵母はブドウ糖2個のマルトースまで。この差が発酵特性の違いを生む。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q24', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: '麦汁中のタンパク質は（❶）の働きによって、様々な分子量の（❷）とアミノ酸に分解されます。（❶）（❷）の組み合わせを選べ。',
+    choices: ['❶:α-アミラーゼ、❷:デキストリン', '❶:α-アミラーゼ、❷:ペプチド', '❶:プロテアーゼ、❷:デキストリン', '❶:プロテアーゼ、❷:ペプチド'],
+    answer: 3,
+    explanation: 'タンパク質を分解するのはプロテアーゼ（タンパク質分解酵素）。分解されるとペプチドとアミノ酸になる。α-アミラーゼはデンプンを分解してデキストリンや麦芽糖を作る酵素。酵素と基質の対応を整理しよう！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q25', genre: '❷ 製法・スタイル', difficulty: '★★☆',
+    text: '仕込工程でつくられる麦汁に関して、正しく説明しているものを、次の選択肢より選べ。',
+    choices: [
+      '麦汁冷却後は細菌や野生酵母が繁殖しやすいため注意が必要である',
+      '麦汁煮沸の主な目的は酵素を活性化させることである',
+      '麦汁ろ過はエキス分をできるだけ多く取るために強制的に行う',
+      '麦汁煮沸で生成されたブルッフはより強い煮沸で微粒子にするのがよい'
+    ],
+    answer: 0,
+    explanation: '冷却後の麦汁は雑菌・野生酵母が繁殖しやすい危険な状態。素早く目的の発酵温度まで冷却し、すぐに酵母を添加することが重要。煮沸の目的は「酵素の失活・雑菌殺菌・ホップ苦味の抽出・ブルッフ形成」。酵素の活性化は誤り。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q26', genre: '❷ 製法・スタイル', difficulty: '★★☆',
+    text: 'トロピカル系の強いホップの香り、苦味を抑えたソフトな口あたり、白濁したオレンジ色などが特徴のビアスタイルを選べ。小麦やオーツ麦を加えて増やしたタンパク質がホップ等のポリフェノールと結びついて形成されたコロイドが独特の濁りを生んでいます。',
+    choices: ['ダブルIPA', 'ニューイングランドIPA', 'インペリアルIPA', 'ウェストコーストIPA'],
+    answer: 1,
+    explanation: 'ニューイングランドIPA（NEIPA）は白濁・ジューシー・低苦味が特徴。小麦やオーツ麦由来のタンパク質とホップのポリフェノールが結合してコロイドを形成し、独特のhazy（濁り）を生む。「ジューシーIPA」とも呼ばれる。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q27', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: 'ベルギーのシント・シクステュス修道院で醸造。醸造所は1900年設立。トラピストビールの中で最も小規模なブランドを選べ。',
+    choices: ['ウェストマール', 'ウェストフレテレン', 'ロシュフォール', 'オルヴァル'],
+    answer: 1,
+    explanation: 'ウェストフレテレン（Westvleteren）はベルギーのシント・シクステュス修道院が造る最小規模のトラピストビール。市販流通をほぼせず入手困難なことで有名。世界最高のビールと呼ばれることもある幻の一本。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q28', genre: '❷ 製法・スタイル', difficulty: '★★☆',
+    text: '原材料に麦芽にしない小麦（未麦芽小麦）を使用している商品を、次の選択肢より選べ。',
+    choices: ['ヒューガルデンホワイト', 'フリューケルシュ', 'ケストリッツァー シュヴァルツビア', 'ブリュードッグパンクIPA'],
+    answer: 0,
+    explanation: 'ヒューガルデンホワイトはベルギーのホワイトビール（ウィットビア）で、未麦芽小麦を約50%使用するのが特徴。コリアンダーとオレンジピールも加えられ、白濁した見た目とフルーティな香りが持ち味。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q29', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: '18世紀終盤の最も早い時期からインドにビールを輸出していた醸造者の一人がロンドンのボウ醸造所の（A）でした。東インド会社を通じ（A）のビールがインドに輸出されましたが（B）はインドで好評を博しました。（A）（B）の組み合わせを選べ。',
+    choices: [
+      '❶:ジョージ・ホジソン、❷:オクトーバービール',
+      '❶:ウィリアム・バス、❷:バス・ペールエール',
+      '❶:ジョージ・ホジソン、❷:バス・ペールエール',
+      '❶:ウィリアム・バス、❷:オクトーバービール'
+    ],
+    answer: 0,
+    explanation: 'IPAのルーツとなる話。ロンドンのボウ醸造所のジョージ・ホジソンが東インド会社を通じてインドにビールを輸出し人気を博した。後にバスなど他の醸造所もIPAを製造するようになった。「バス・ペールエール」との混同に注意。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q30', genre: '❷ 製法・スタイル', difficulty: '★★★',
+    text: '熟成させたランビックと発酵を終えたばかりの若いランビックをブレンドし、瓶内で二次発酵させたものを何というか。次の選択肢より選べ。',
+    choices: ['ストレートランビック', 'ファロ', 'フルーツランビック', 'グーズランビック'],
+    answer: 3,
+    explanation: 'グーズランビックは熟成ランビックと若いランビックをブレンドして瓶内二次発酵させたもの。「ベルギーのシャンパン」とも称される。ファロは砂糖を加えたもの、フルーツランビックはフルーツを加えたもの。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q31', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: 'フランス語で「季節」を意味するビアスタイル「セゾン」の発祥地はどこか、次の選択肢より選べ。',
+    choices: ['ワロン地方', 'フランダース地方', 'ブリュッセル近郊', 'ケルン近郊'],
+    answer: 0,
+    explanation: 'セゾンはベルギーのフランス語圏・ワロン地方発祥。農夫が冬に仕込み夏の農作業期間中に飲むために造られたビール。ドライでスパイシーな味わいが特徴。フランダース地方はフラマン語圏で別のスタイルが多い。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q32', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: '「トリペル」のスタイルの特徴にあてはまるものを、次の選択肢より選べ。',
+    choices: ['色合いは淡い黄金色', '乳酸菌由来の酸味', 'アルコール度数は4.8〜5.5％', '柑橘系の果皮を使用'],
+    answer: 0,
+    explanation: 'トリペルはベルギーのトラピスト系スタイルで、淡い黄金色・高アルコール（7〜10%）・ドライな口当たりが特徴。乳酸菌の酸味はランビックやフランダース・レッドエールの特徴。アルコール4.8〜5.5%はデュッベル程度。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q33', genre: '❷ 製法・スタイル', difficulty: '★★☆',
+    text: 'ドイツのビアスタイル「ヘーフェヴァイツェン」の「ヘーフェ」の意味を、次の選択肢より選べ。',
+    choices: ['白', '酵母', '小麦', '半分'],
+    answer: 1,
+    explanation: 'ヘーフェ（Hefe）はドイツ語で「酵母」の意味。ヴァイツェン（Weizen）は「小麦」。つまりヘーフェヴァイツェンは「酵母入り小麦ビール」。酵母を除去した透明タイプは「クリスタルヴァイツェン」と呼ばれる。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q34', genre: '❷ 製法・スタイル', difficulty: '★☆☆',
+    text: 'ベルギービールで通常のビール醸造に使用しない、メープルシロップ、ポテト、蜂蜜などを用いてつくるビールを、次の選択肢より選べ。',
+    choices: ['アビイビール', 'セゾンビール', 'スペシャルビール', 'ベルジャン・ストロング・ブロンドエール'],
+    answer: 2,
+    explanation: 'スペシャルビールはベルギーの分類で、通常使わない特殊な原料（メープルシロップ・蜂蜜・ポテトなど）を使ったビールの総称。アビイビールは修道院スタイル、セゾンは季節のビール、ベルジャン・ストロング・ブロンドは高アルコールの淡色エール。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q35', genre: '❷ 製法・スタイル', difficulty: '★★☆',
+    text: 'ピートで燻した麦芽を使用する場合があるビアスタイルを、次の選択肢より選べ。',
+    choices: ['スコッチエール', 'ランビック', '酒イーストビール', 'ヴァイス'],
+    answer: 0,
+    explanation: 'スコッチエール（スコットランド産エール）は、ピート（泥炭）で燻した麦芽を使うことがある。スモーキーな風味がウイスキーに通じる。ランビックは自然発酵、ヴァイスは小麦ビール、酒イーストビールは日本酒酵母使用の独自スタイル。'
+  },
+  // ===== ❸ 歴史 =====
+  {
+    type: 'single',
+    qNum: 'Q36', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: 'ビールの世界史における出来事について、古い順に並べたものを次の選択肢より選べ。\nA:古代ゲルマン人たちが穀物を栽培し、ビールづくりを始めた\nB:『ハムラビ法典』でビールにまつわる４つの条文が記された\nC:ガリアやイベリア半島に住んでいたケルト人たちが盛んにビールをつくった',
+    choices: ['B→C→A', 'B→A→C', 'A→C→B', 'A→B→C'],
+    answer: 0,
+    explanation: '順番はB→C→A。ハムラビ法典は紀元前1750年頃（メソポタミア）、ケルト人のビール醸造は紀元前数百年頃、ゲルマン人の穀物栽培・ビール造りはそれより後の時代。歴史の流れ「メソポタミア→ケルト→ゲルマン」で覚えよう。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q37', genre: '❸ 歴史', difficulty: '★★★',
+    text: '中世ヨーロッパにおいて、各荘園にビール醸造所の設置を命じ、ワインに比べ低く見られていたビールの地位を向上させた人物を、次の選択肢より選べ。',
+    choices: ['ヴィルヘルム4世', 'ガンブリヌス', 'カール大帝', 'ハムラビ王'],
+    answer: 2,
+    explanation: 'カール大帝（シャルルマーニュ）は8世紀のフランク王国の王で、各荘園にビール醸造所の設置を命じ、ビールの品質向上と地位向上に貢献した。ヴィルヘルム4世はビール純粋令を制定したバイエルン公。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q38', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: '戦後のイギリスではビッグ・シックスという6社がシェアの大半を占めた。このビッグ・シックスに入らない企業はどれか、次の選択肢より選べ。',
+    choices: ['バス', 'ブリュードッグ', 'アライド', 'ウィットブレッド'],
+    answer: 1,
+    explanation: 'ブリュードッグは2007年創業のスコットランドのクラフトビール会社で、戦後のビッグ・シックスとは時代も性質も別物。ビッグ・シックスはバス、アライド、ウィットブレッド、クーラー、ワトニー、スコティッシュ&ニューカッスルの6社。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q39', genre: '❸ 歴史', difficulty: '★★☆',
+    text: '以下の3つから導き出される出来事を選べ。\n❶:デンマークのカールスバーグ研究所で発明される\n❷:キューレとともに装置を考案した\n❸:ビールが安価で大量につくれるようになった',
+    choices: ['ハンセンが酵母純粋培養法を発明', 'ジェームスワルカーが麦汁撹拌機を発明', 'ペインターが王冠製造機を発明', 'リンデがアンモニア冷凍機を発明'],
+    answer: 0,
+    explanation: 'エミール・ハンセンはカールスバーグ研究所で酵母の純粋培養法を発明（1883年）。これにより雑菌のない安定した品質のビールを大量生産できるようになった。リンデの冷凍機も重要だが、カールスバーグ研究所はハンセンの手がかり。'
+  },
+  {
+    type: 'group',
+    genre: '❸ 歴史',
+    passage: '【文章】2004年、ベルギーの( ❶ )社はブラジルのアンベブ社と合併した。その後、2008年、アメリカのアンハイザーブッシュ社を買収して世界最大のビール会社となる。さらに、2016年当時、世界2位の( ❷ )社を買収した。',
+    qs: [
+      {
+        qNum: 'Q40', difficulty: '★★☆',
+        text: '( ❶ )に入る社名を次の選択肢より選べ。',
+        choices: ['ステラ・アルトワ', 'ジュピラー', 'インターブリュー', 'ブルッグス・ゾット'],
+        answer: 2,
+        explanation: 'インターブリュー（Interbrew）はベルギーの大手ビール会社。2004年にブラジルのアンベブと合併してインベブ（InBev）となり、2008年にアンハイザーブッシュを買収してABインベブとなった世界最大のビールメーカー。'
+      },
+      {
+        qNum: 'Q41', difficulty: '★☆☆',
+        text: '( ❷ )に入る社名を次の選択肢より選べ。',
+        choices: ['モルソン・クアーズ', 'ハイネケン', 'SABミラー', 'カールスバーグ'],
+        answer: 2,
+        explanation: 'ABインベブが2016年に買収したのはSABミラー（南アフリカ系の世界第2位）。この合併でABインベブは世界シェアの約30%を占める超巨大ビール会社になった。ハイネケンやカールスバーグは別会社として独立している。'
+      }
+    ]
+  },
+  {
+    type: 'single',
+    qNum: 'Q42', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: 'アメリカのビール史に関する出来事について、古い順番に並べたものを次の選択肢より選べ。\nA:セントルイスで「バドワイザー」誕生\nB:禁酒法施行\nC:ホームブルーイングの解禁\nD:小規模醸造所が増加し537社突破',
+    choices: ['A→B→C→D', 'B→A→C→D', 'A→B→D→C', 'B→A→D→C'],
+    answer: 0,
+    explanation: '順番はA→B→C→D。バドワイザー誕生は1876年、禁酒法施行は1920年、ホームブルーイング解禁は1978年（カーター大統領）、小規模醸造所537社突破は1990年代。アメリカクラフトビール史の流れを押さえよう。'
+  },
+  {
+    type: 'group',
+    genre: '❸ 歴史',
+    passage: 'ピルスナーの元祖「ピルスナーウルケル」は、チェコ・ピルゼン市の醸造所に招かれたドイツ人醸造家の指導によって誕生した。',
+    qs: [
+      {
+        qNum: 'Q43', difficulty: '★★☆',
+        text: 'このドイツ人醸造家を、次の選択肢より選べ。',
+        choices: ['ガブリエル・ゼードルマイヤー', 'ヨーゼフ・グロル', 'アントン・ドレハー', 'ヤコブ・クリスチャン・ヤコブセン'],
+        answer: 1,
+        explanation: 'ヨーゼフ・グロルはバイエルン出身の醸造家で、1842年にピルゼンで世界初のピルスナーを誕生させた。ゼードルマイヤーはミュンヘンのビール改革者、ドレハーはウィーンラガーの父、ヤコブセンはカールスバーグの創業者。'
+      },
+      {
+        qNum: 'Q44', difficulty: '★★☆',
+        text: 'ピルスナーの特徴である黄金色を生んだ要因として誤っているものを、次の選択肢より選べ。',
+        choices: ['ピルゼンの水質が軟水であったこと', '最新の熱風麦芽乾燥設備の使用', 'ホップペレットの使用', '淡色麦芽の使用'],
+        answer: 2,
+        explanation: 'ホップペレットは現代の技術で、1842年のピルスナー誕生時には存在しない。黄金色の要因は軟水（硬度が低く淡色に仕上がる）、熱風乾燥で色づきを抑えた淡色麦芽、そして下面発酵技術の組み合わせ。'
+      }
+    ]
+  },
+  {
+    type: 'single',
+    qNum: 'Q45', genre: '❸ 歴史', difficulty: '★★★',
+    text: 'ヴァイツェンが「貴族のビール」と呼ばれる由来を、次の選択肢より選べ。',
+    choices: [
+      'オクトーバーフェストの貴族席専用ビールだったこと',
+      '領主直営の醸造所だけが独占醸造していたこと',
+      '一度飲むと財運が上がると言われていたこと',
+      'シルクロード経由の希少なスパイスを使用していたこと'
+    ],
+    answer: 1,
+    explanation: 'ヴァイツェン（小麦ビール）はバイエルンで一時期、領主（ヴィッテルスバッハ家）が醸造権を独占していた。一般の民が飲めない「貴族のビール」だったことが名前の由来。19世紀に民間に醸造権が解放された。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q46', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: '現在、ドイツではビール純粋令による制限が適用されないものは何か、次の選択肢より選べ。',
+    choices: ['国内産ビールのみ', '輸出ビールのみ', '輸入ビールのみ', '輸出ビールと輸入ビール両方'],
+    answer: 3,
+    explanation: 'ドイツのビール純粋令は国内で販売・製造されるビールに適用されるが、輸出用ビールと輸入ビールには適用されない。つまり「輸出ビールと輸入ビールの両方」が適用除外。EUの規制との兼ね合いで複雑な経緯がある。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q47', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: '寿屋（現サントリーホールディングス）に、現在の横浜市鶴見区にあったビール工場を売却した会社を、次の選択肢より選べ。',
+    choices: ['麒麟麦酒', '日本麦酒鉱泉', '日英醸造', '東洋醸造'],
+    answer: 2,
+    explanation: '日英醸造（にちえいじょうぞう）が横浜鶴見のビール工場を寿屋（後のサントリー）に売却。これがサントリービール事業の出発点となった。サントリービールの歴史に絡む人物・会社は頻出なのでしっかり整理しよう。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q48', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: '「日本人経営者による最初のビール会社」が設立された場所を、次の選択肢より選べ。',
+    choices: ['札幌', '東京', '横浜', '大阪'],
+    answer: 3,
+    explanation: '日本人経営者による最初のビール会社は1889年に大阪で設立された「大阪麦酒会社」（後のアサヒビール）。外国人主導だった先行会社と異なり、日本人が主体となった初の会社として歴史的に重要。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q49', genre: '❸ 歴史', difficulty: '★★★',
+    text: '日本でノンアルコールビールは2009年以降急増するが、その大きな要因となった出来事を次の選択肢より選べ。',
+    choices: ['酒税法の改正', '道交法の改正', '未成年飲酒禁止法の改正', 'ホームブルーイングの解禁'],
+    answer: 1,
+    explanation: '2007年の道路交通法改正で飲酒運転の罰則が大幅に強化された。これにより「運転するかもしれないけど乾杯したい」というニーズが高まり、ノンアルコールビールが急増。飲酒運転厳罰化がノンアル市場を生んだ。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q50', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: '1900（明治33）年に札幌麦酒が東京進出の拠点として土地を買収し1903年に工場を建設した場所には、現在何があるか。次の選択肢より選べ。',
+    choices: ['サッポロビール本社', 'アサヒグループ研究開発センター', 'アサヒビール本社', 'ビヤホールライオン銀座七丁目店'],
+    answer: 2,
+    explanation: '現在の東京・墨田区にあるアサヒビール本社の場所は、かつての札幌麦酒（後に大日本麦酒、さらに朝日麦酒へ）の工場跡地。ビールメーカーの合併・分割の歴史を知るうえで重要な場所。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q51', genre: '❸ 歴史', difficulty: '★★☆',
+    text: '1908（明治41）年の麦酒税法改正により製造免許の最低基準が変更された。これが当時のビール業界にもたらした変化として正しいものを選べ。',
+    choices: [
+      '年間生産量が最低500石に達しない小規模な醸造所の多くは、合併して事業を継続した',
+      '年間生産量が1,000石以上の大規模な工場は、新しい税法の要件をクリアし、業界内での地位を確固たるものにした',
+      '中小のビール醸造所は、独自性と品質によって顧客の関心を引き続き集めることができた',
+      '海外から原料を輸入していた醸造所は、国内の法改正の影響を受けずに事業を継続することができた'
+    ],
+    answer: 1,
+    explanation: '1908年の麦酒税法改正で最低製造量の基準が引き上げられ、大規模工場が有利になった。中小醸造所は基準を満たせず廃業・合併が相次ぎ、大手数社による寡占が進んだ。日本ビール業界の大手集中の始まりとなる改正。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q52', genre: '❸ 歴史', difficulty: '★☆☆',
+    text: '日本国内のビールの価格に関連する出来事について、古い順に並べたものを次の選択肢より選べ。\nA:競争防止のためにビール価格が統一\nB:自由な価格設定をする販売店が増加\nC:大手流通チェーンがビールの値下げを発表\nD:ビール各社が「希望小売価格は参考価格である」と告知',
+    choices: ['A→D→B→C', 'A→B→D→C', 'A→C→D→B', 'A→D→C→B'],
+    answer: 3,
+    explanation: '順番はA→D→C→B。価格統一→希望小売価格の参考化告知→大手流通の値下げ発表→自由価格設定の拡大、という流れで日本のビール価格自由化が進んだ。'
+  },
+  {
+    type: 'group',
+    genre: '❸ 歴史',
+    passage: '【文章】1889(明治22)年に誕生した( ❶ )会社は、生田秀をドイツのヴァイエンシュテファン中央農学校に留学させ、ビール醸造学を習得させる。生田は、日本人初のブラウマイスターの称号を得て帰国。現在の大阪府吹田市に醸造所を構えた。( ❶ )会社は、多くの近代設備を導入し、1892(明治25)年に( ❷ )を発売した。',
+    qs: [
+      {
+        qNum: 'Q53', difficulty: '★☆☆',
+        text: '( ❶ )に入る社名を次の選択肢より選べ。',
+        choices: ['浅田麦酒', '朝日麦酒', '大阪麦酒', '日本麦酒'],
+        answer: 2,
+        explanation: '大阪麦酒会社（1889年設立）は現在のアサヒビールの前身。吹田市に醸造所を構えて近代的なビール製造を行った。「朝日麦酒」は後の法人名で、この時点では「大阪麦酒」が正解。'
+      },
+      {
+        qNum: 'Q54', difficulty: '★★☆',
+        text: '( ❷ )に入る商品名を次の選択肢より選べ。',
+        choices: ['ユニオンビール', 'アサヒビール', 'ヱビスビール', '大阪ビール'],
+        answer: 1,
+        explanation: '大阪麦酒会社が1892年に発売したのが「アサヒビール」。当時から「アサヒ」のブランドが使われていた。後に会社名も朝日麦酒→アサヒビールと変わる。ヱビスはサッポロの前身・日本麦酒会社のブランド。'
+      }
+    ]
+  },
+  {
+    type: 'group',
+    genre: '❸ 歴史',
+    passage: '【文章】1885(明治18)年、( ❶ )の跡地に、香港法人ジャパン・ブルワリー・カンパニーが設立されます。株主は外国人が中心でしたが、設立時に日本人でただ一人( ❷ )が株主として参加しました。これが後の「キリンビール」発売につながります。',
+    qs: [
+      {
+        qNum: 'Q55', difficulty: '★★☆',
+        text: '( ❶ )にあてはまる醸造所を、次の選択肢より選べ。',
+        choices: ['スプリングバレー・ブルワリー', 'ジャパン・ブルワリー', 'アマヌマ・ブルワリー', 'シブタニ・ブルワリー'],
+        answer: 0,
+        explanation: 'スプリングバレー・ブルワリーは1869年にアメリカ人のウィリアム・コープランドが横浜に創設した日本最初期のビール醸造所。閉鎖後の跡地にジャパン・ブルワリー・カンパニーが設立され、キリンビールへとつながる。'
+      },
+      {
+        qNum: 'Q56', difficulty: '★☆☆',
+        text: '( ❷ )に入る人物を次の選択肢より選べ。',
+        choices: ['渋谷庄三郎', '磯野計', '岩崎弥之助', '岩崎弥太郎'],
+        answer: 2,
+        explanation: '岩崎弥之助（三菱財閥2代目）がジャパン・ブルワリー・カンパニー設立時の日本人唯一の株主。後に三菱が経営参画し、これがキリンビール発売の礎となる。弥太郎（初代）と弥之助（2代目）を混同しないよう注意！'
+      }
+    ]
+  },
+  // ===== ❹ 文化・飲み方 =====
+  {
+    type: 'group',
+    genre: '❹ 文化・飲み方',
+    passage: '【文章】祭りの中心はビールや食べ物を出す、約1万席が用意された巨大な14のテントで、地元( ❶ )市内の大手ビール醸造所( ❷ )社だけがテント内でビールを提供することが許可されている。（オクトーバーフェストについて）',
+    qs: [
+      {
+        qNum: 'Q57', difficulty: '★★★',
+        text: '( ❶ )に入る地名を次の選択肢より選べ。',
+        choices: ['ウィーン', 'ベルリン', 'ミュンヘン', 'デュッセルドルフ'],
+        answer: 2,
+        explanation: 'オクトーバーフェストはドイツ・ミュンヘンで毎年開催される世界最大のビール祭り。ミュンヘン市内の大手6社だけがテント内でビールを提供できる。これは絶対覚えておくべき基本！'
+      },
+      {
+        qNum: 'Q58', difficulty: '★★★',
+        text: '( ❷ )に入る数字を次の選択肢より選べ。',
+        choices: ['6', '10', '14', '18'],
+        answer: 0,
+        explanation: 'オクトーバーフェストのテントでビールを提供できるのはミュンヘン市内の大手6社（パウラナー、レーベンブロイ、ホフブロイ、シュパーテン、アウグスティナー、ハッカー・プショル）。この「6社」は頻出！'
+      }
+    ]
+  },
+  {
+    type: 'single',
+    qNum: 'Q59', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: '金属製のビールグラスについて、誤っているものを次の選択肢より選べ。',
+    choices: [
+      '銅がグラスの素材として用いられることがある',
+      '一般的に金属製のグラスは唇に冷たさを感じにくい',
+      '錫(すず)を主体とした合金はピューターと呼ばれる',
+      'ステンレス製は二重構造にして保冷性を高めることができる'
+    ],
+    answer: 1,
+    explanation: '金属製グラスは熱伝導率が高いため、唇に「冷たさを感じやすい」。「感じにくい」は誤り。ピューター（錫合金）、ステンレス二重構造、銅製グラスはすべて正しい記述。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q60', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: 'レモネードとビールをあわせたビアカクテルの名前を、次の選択肢より選べ。',
+    choices: ['ハイジ', 'シャンディガフ', 'ビアスピッリツァー', 'パナシェ'],
+    answer: 3,
+    explanation: 'パナシェ（Panaché）はビールとレモネードを混ぜたフランスのビアカクテル。シャンディガフはビールとジンジャーエール（またはジンジャービア）の組み合わせ。「パナシェ＝レモネード」と覚えよう！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q61', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: 'ビールの液体部分より、泡部分に多い成分は何か、次の選択肢より選べ。',
+    choices: ['甘味', '苦味', '酸味', '辛味'],
+    answer: 1,
+    explanation: 'ビールの泡にはホップ由来の苦味成分（イソα酸）が液体より多く含まれる。泡はビールの香りを閉じ込め、酸化を防ぎ、苦味を和らげる役割も持つ。「泡は苦い」と覚えておこう。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q62', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: '次の選択肢の内、最も容量が少ないグラスを選べ。',
+    choices: ['パイントグラス', 'ヴァイツェングラス', 'ハーフパイントグラス', 'シュタンゲ'],
+    answer: 3,
+    explanation: 'シュタンゲはケルシュ用の細長い円柱形グラスで容量は約200ml。ハーフパイントは約284ml（UK）、パイントは約568ml（UK）、ヴァイツェングラスは500ml前後が一般的。最も小さいのはシュタンゲ。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q63', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: 'ビールの飲み比べセットのことを何と呼ぶか。次の選択肢より選べ。',
+    choices: ['ビアフライト', 'スロンチャ', 'タップマルシェ', 'コーントップ'],
+    answer: 0,
+    explanation: 'ビアフライト（Beer Flight）は複数の少量ビールを一度に飲み比べるセット。クラフトビールバーやブルワリーで定番の提供スタイル。スロンチャはポーランドのビアカクテル、タップマルシェはキリンのサービス名。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q64', genre: '❹ 文化・飲み方', difficulty: '★☆☆',
+    text: 'IBC（インターナショナル・ビアカップ）を主催している団体を、次の選択肢より選べ。',
+    choices: ['ヴィクトリア州農業協会', 'ブルワーズ・アソシエーション', 'パラグラフ・パブリッシング社', 'クラフトビア・アソシエーション'],
+    answer: 3,
+    explanation: 'IBCはクラフトビア・アソシエーション（日本）が主催する国際的なビールコンテスト。ブルワーズ・アソシエーションはアメリカのGABFを主催。ヴィクトリア州農業協会はオーストラリアのビールコンテストと関連する団体。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q65', genre: '❹ 文化・飲み方', difficulty: '★★☆',
+    text: 'ビールは高温にさらされるとダンボール紙のようなにおい（紙臭）が生じることが知られている。この紙臭の原因物質を次の選択肢より選べ。',
+    choices: ['チオール化合物', 'ジアセチル', 'トランス-２-ノネナール', '硫化ジメチル'],
+    answer: 2,
+    explanation: 'トランス-2-ノネナール（trans-2-nonenal）はビールの老化臭・紙臭の主原因物質。脂質の酸化によって生成され、高温保存や長期保存で増加する。ジアセチルはバター臭、硫化ジメチルは野菜臭、チオール化合物は光臭の原因。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q66', genre: '❹ 文化・飲み方', difficulty: '★☆☆',
+    text: 'ミュンヘンのオクトーバーフェストのテント内でビールを提供できる地元6社に含まれない会社はどれか、次の選択肢より選べ。',
+    choices: ['パウラナー', 'レーベンブロイ', 'ホフブロイ', 'エルディンガー'],
+    answer: 3,
+    explanation: 'エルディンガーはバイエルン州エルディング市のブルワリーで、ミュンヘン市内の醸造所ではないためオクトーバーフェストの提供6社に含まれない。6社はパウラナー、レーベンブロイ、ホフブロイ、シュパーテン、アウグスティナー、ハッカー・プショル。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q67', genre: '❹ 文化・飲み方', difficulty: '★☆☆',
+    text: '「大びん換算」は日本の大手ビールメーカーが出荷数量を示す際に使用する単位である。大びん換算1箱の容量を次の選択肢より選べ。',
+    choices: ['8,400ml', '12,000ml', '12,660ml', '15,192ml'],
+    answer: 2,
+    explanation: '大びん換算1箱は633ml×20本＝12,660ml。日本の大びん（大瓶）は633ml。この数字はビール業界独自の出荷単位として使われる。「633×20＝12,660」で計算して覚えよう。'
+  },
+  {
+    type: 'group',
+    genre: '❹ 文化・飲み方',
+    passage: '「世界の主要国のビール消費量」の調査について、以下の問いに答えよ。',
+    qs: [
+      {
+        qNum: 'Q68', difficulty: '★★☆',
+        text: '「世界の主要国のビール消費量」を毎年発表している企業を、次の選択肢より選べ。',
+        choices: ['日経リサーチ', '帝国データバンク', 'アサヒホールディングス', 'キリンホールディングス'],
+        answer: 3,
+        explanation: 'キリンホールディングスが毎年「世界主要国のビール消費量」を発表している。ビール業界で最も引用されるデータとして知られる。アサヒではなくキリンという点を覚えておこう。'
+      },
+      {
+        qNum: 'Q69', difficulty: '★☆☆',
+        text: '2022年の「国別ビール消費量」の1〜3位について正しいものを選べ。',
+        choices: [
+          '1位:中国、2位:アメリカ、3位:ブラジル',
+          '1位:中国、2位:ブラジル、3位:アメリカ',
+          '1位:中国、2位:メキシコ、3位:アメリカ',
+          '1位:中国、2位:アメリカ、3位:メキシコ'
+        ],
+        answer: 0,
+        explanation: '2022年のビール消費量は1位:中国、2位:アメリカ、3位:ブラジル。中国の1位は長年変わらないが、2位・3位の順番は変動することがある。「中国・アメリカ・ブラジル」の順を確認しておこう。'
+      }
+    ]
+  },
+  {
+    type: 'single',
+    qNum: 'Q70', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: 'スイングカランの説明として、間違っているものを次の選択肢より選べ。',
+    choices: [
+      '昭和初期から使われているドラフトビールの注ぎ口',
+      'カランのレバーを押して泡づけ機能でビールの液の上に泡をのせる',
+      'ビールの出る勢いが強いので、素早く注ぐことができる',
+      '「泡切り３年、注ぎ８年」という言葉があるほど取り扱いは難しい'
+    ],
+    answer: 1,
+    explanation: 'スイングカランは「レバーを手前に引いて液を出し、奥に押して泡を出す」構造。「押して泡をのせる」は誤り。昭和初期からの歴史ある注ぎ口で、熟練を要することから「泡切り３年、注ぎ８年」と言われる。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q71', genre: '❹ 文化・飲み方', difficulty: '★☆☆',
+    text: '日本の酒税法では、製造免許を取得するために必要な年間最低製造数量はビールで（❶）KL、発泡酒は（❷）KLである。正しい組み合わせを選べ。',
+    choices: ['❶:50、❷:5', '❶:60、❷:6', '❶:50、❷:6', '❶:60、❷:5'],
+    answer: 1,
+    explanation: 'ビールの製造免許には年間最低60KL、発泡酒は6KLの製造量が必要。発泡酒免許はビールの10分の1の量でOKなので、小規模なブルーパブが発泡酒免許で開業するケースが多い。「60と6」をセットで覚えよう。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q72', genre: '❹ 文化・飲み方', difficulty: '★★☆',
+    text: '「ビールを口に含んで口内に感じる味や香り」を示す言葉を、次の選択肢より選べ。',
+    choices: ['aroma', 'flavor', 'body', 'hazy'],
+    answer: 1,
+    explanation: 'flavorは口に含んだときに感じる味・香りの総合的な感覚。aromaは鼻で感じる香り（外観から漂う香り）、bodyはビールの濃度感・重さ（軽い〜重い）、hazyは濁りの状態を指す。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q73', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: '次のA、B、Cのビール関連用語の意味について正しい組み合わせを選べ。\n❶:熱烈なビール愛好家\n❷:ビールを持ち運ぶことができる容器\n❸:特定ブルワリーに限定したビールを出すイベント',
+    choices: [
+      '❶:グラウラー、❷:ビアギーク、❸:タップテイクオーバー',
+      '❶:ビアギーク、❷:グラウラー、❸:タップテイクオーバー',
+      '❶:ビアギーク、❷:タップテイクオーバー、❸:グラウラー',
+      '❶:タップテイクオーバー、❷:グラウラー、❸:ビアギーク'
+    ],
+    answer: 1,
+    explanation: 'ビアギーク＝熱烈なビール愛好家、グラウラー＝持ち運び可能なビール容器（大型のボトルや金属製容器）、タップテイクオーバー＝特定ブルワリーのビールだけを出す特別イベント。カタカナ用語は意味と対応させて覚えよう！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q74', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: 'ビールを美味しく飲むためのグラスの扱い方の説明として誤っているものを、次の選択肢より選べ。',
+    choices: [
+      '食器用とは別のビールグラス専用のスポンジで洗う',
+      'ビールグラスの内側までふきんでしっかり拭く',
+      '食器用洗剤を使用しすすぎを十分に行う',
+      'ビールグラスを飲む前に冷水にくぐらせる'
+    ],
+    answer: 1,
+    explanation: 'ふきんで内側を拭くと繊維が付着し、泡立ちに悪影響を与えるため誤り。グラスは自然乾燥か清潔なペーパーで外側のみ拭く。専用スポンジ・洗剤使用・冷水くぐらせはすべて正しいグラスケア。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q75', genre: '❹ 文化・飲み方', difficulty: '★☆☆',
+    text: 'ビアカクテルに関して、誤っているものを次の選択肢より選べ。',
+    choices: [
+      'レッドアイは元々は生卵を入れるレシピだった',
+      'パナシェは「自転車乗り」の意味である',
+      'ホフディーゼルはビールとコーラを混ぜ合わせたものである',
+      'ボイラーメーカーはビールとバーボンを混ぜ合わせたものである'
+    ],
+    answer: 1,
+    explanation: 'パナシェ（Panaché）はフランス語で「混合した」「まだら模様」という意味で、「自転車乗り」ではない。レッドアイに生卵を入れる発祥説、ホフディーゼルのビール×コーラ、ボイラーメーカーのビール×バーボンはいずれも正しい。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q76', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: '口から入ったアルコールの内、胃から吸収される割合として最も適切なものを、次の選択肢より選べ。',
+    choices: ['胃からは吸収されない', '約20％', '約50％', '約80％'],
+    answer: 1,
+    explanation: 'アルコールは胃から約20%、小腸から約80%が吸収される。空腹時は胃から直接小腸に移行するため吸収が早い。食事をしながら飲むと胃に食物が残り吸収が遅くなる。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q77', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: '肝臓の働きについて、正しいものを次の選択肢より選べ。',
+    choices: [
+      '体内に吸収されたアルコールの約9割を分解する',
+      '体内に吸収されたアルコールの約6割を分解する',
+      '体内に吸収されたアルコールの約3割を分解する',
+      '体内に吸収されたアルコールの約1割を分解する'
+    ],
+    answer: 0,
+    explanation: '肝臓は吸収されたアルコールの約90%を分解する。残りは肺・皮膚・腎臓などから排出される。肝臓の処理能力には個人差があり、1時間あたり約7〜8gのアルコールが処理の目安。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q78', genre: '❹ 文化・飲み方', difficulty: '★★☆',
+    text: '日本人の何割が、ALDH2 の働きが強い「活性型」に分類されるか。最も適切なものを次の選択肢より選べ。',
+    choices: ['約1割', '約3割', '約6割', '約9割'],
+    answer: 2,
+    explanation: 'ALDH2（アルデヒド脱水素酵素2）の活性型は日本人の約60%（6割）。残りは低活性型（約20%）と不活性型（約20%）。活性型は飲んでも顔が赤くなりにくく、アルコール代謝が速い。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q79', genre: '❹ 文化・飲み方', difficulty: '★★☆',
+    text: 'アルコール分5％の350ml入り缶ビールの純アルコール量を、次の選択肢より選べ。',
+    choices: ['14g', '18g', '20g', '24g'],
+    answer: 0,
+    explanation: '純アルコール量の計算式：容量(ml)×アルコール度数(%)÷100×0.8（アルコール比重）。350×0.05×0.8＝14g。「ml×度数×0.8」の式を覚えておけば試験でも使える！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q80', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: '2022年4月2日に民法改正があり、成年年齢の引き下げが施行された。この改正にともない飲酒制限はどのように変わったか。',
+    choices: [
+      '18歳以上は親権者と同伴なら飲酒可能となった',
+      '18歳以上が飲酒可能となった',
+      '19歳以上が飲酒可能となった',
+      '20歳未満は変わらず飲酒禁止である'
+    ],
+    answer: 3,
+    explanation: '2022年の民法改正で成年年齢は18歳に引き下げられたが、飲酒・喫煙・公営ギャンブルは従来通り20歳未満禁止のまま変わっていない。「成年＝飲酒可能ではない」という点が重要。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q81', genre: '❹ 文化・飲み方', difficulty: '★★★',
+    text: '道路交通法上「酒気帯び運転」とされる呼気1リットルあたりのアルコール濃度は何㎎以上か。次の選択肢より選べ。',
+    choices: ['0.015㎎', '0.15㎎', '1.5㎎', '15.0㎎'],
+    answer: 1,
+    explanation: '酒気帯び運転の基準は呼気1Lあたり0.15mg以上のアルコール濃度。これを超えると酒気帯び運転として検挙される。さらに0.25mg以上は「酒酔い運転」となり罰則が重くなる。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q82', genre: '❹ 文化・飲み方', difficulty: '★☆☆',
+    text: '「お酒を飲めるのに、あえてお酒を飲まないことを選択するライフスタイル」を示す言葉を、次の選択肢より選べ。',
+    choices: ['ソバーキュリアス', 'ライトウェイト', 'ソーシャルドリンカー', 'フラッシャー'],
+    answer: 0,
+    explanation: 'ソバーキュリアス（Sober Curious）は「素面（しらふ）に興味がある」という意味で、飲めるのにあえて飲まない・飲む量を減らすライフスタイルを指す。ノンアル・低アル市場拡大の背景にある重要なトレンドワード。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q83', genre: '❹ 文化・飲み方', difficulty: '★★☆',
+    text: '2024年2月に厚生労働省が公表したものを、次の選択肢より選べ。',
+    choices: [
+      '酒類の広告・宣伝及び酒類容器の表示に関する基準',
+      'アルコール健康障害対策基本法',
+      '適正飲酒の十か条',
+      '健康に配慮した飲酒に関するガイドライン'
+    ],
+    answer: 3,
+    explanation: '厚生労働省が2024年2月に公表したのは「健康に配慮した飲酒に関するガイドライン」。純アルコール量に基づく飲酒量の目安を示した。「適正飲酒の十か条」は日本酒造組合中央会のもの。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q84', genre: '❹ 文化・飲み方', difficulty: '★★☆',
+    text: '二日酔いの対処法で誤っているものを、次の選択肢より選べ。',
+    choices: [
+      'サウナで汗をかいてアルコールを排出する',
+      '糖分やビタミンＣを含む柑橘類などを食べる',
+      'スポーツドリンクなどの水分を多くとる',
+      '入浴や運動はせず安静にする'
+    ],
+    answer: 0,
+    explanation: 'サウナは脱水を悪化させ、心臓への負担も増すため二日酔い時には危険。アルコールは汗では排出されない（肝臓が分解する）。正しい対処は水分補給・糖分・ビタミン補給・安静にすること。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q85', genre: '❹ 文化・飲み方', difficulty: '★☆☆',
+    text: 'アルコール依存症をセルフチェックできる「AUDIT」というテストについて、誤っているものを次の選択肢より選べ。',
+    choices: [
+      'WHO（世界保健機関）の調査研究により作成された',
+      '過去１年間の「迎え酒」の体験の頻度を問う設問がある',
+      '過去１年間の「飲酒のため前夜の出来事を思い出せなかった」の体験の頻度を問う設問がある',
+      '20問の合計点で自分の飲酒習慣が適切かを確認することができる'
+    ],
+    answer: 3,
+    explanation: 'AUDITは10問（設問10項目）のテストで、合計点で飲酒習慣を評価する。「20問」は誤り。WHO作成、迎え酒・記憶喪失の設問があることはすべて正しい。'
+  },
+  // ===== ❺ 雑学 =====
+  {
+    type: 'single',
+    qNum: 'Q86', genre: '❺ 雑学', difficulty: '★★☆',
+    text: '現在販売されている「アサヒスーパードライ」「キリン一番搾り生ビール」「サッポロ生ビール黒ラベル」の3商品の内、麦芽100％ビールはいくつあるか。次の選択肢より選べ。',
+    choices: ['1つ', '2つ', '3つ', '4つ'],
+    answer: 0,
+    explanation: '3商品のうち麦芽100%なのはキリン一番搾りのみ（1つ）。アサヒスーパードライとサッポロ黒ラベルはコーンスターチなどの副原料を使用している。「一番搾り＝麦芽100%」と覚えておこう。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q87', genre: '❺ 雑学', difficulty: '★☆☆',
+    text: 'ヤッホーブルーイングが販売する「アルコール度数0.7%のIPA。柑橘系アロマホップと酵母が織りなすシトラスやトロピカルフルーツを思わせるフレッシュな香り」という説明の商品名を選べ。',
+    choices: ['前略 好みなんて 聞いてないぜ SORRY', '山の上ニューイ', '正気のサタン', '裏通りのドンダバダ'],
+    answer: 2,
+    explanation: '「正気のサタン」はヤッホーブルーイングのノンアルコール（0.7%）IPA。インパクトのある商品名とクラフトビールらしい香りの高さが特徴。ヤッホーブルーイングは「よなよなエール」でも有名。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q88', genre: '❺ 雑学', difficulty: '★★☆',
+    text: 'キリンビールが展開している家庭用の「会員制生ビールサービス」の名称を、次の選択肢より選べ。',
+    choices: ['タップマルシェ', 'ホームタップ', 'ビアフェスタ', 'ホッピンガレージ'],
+    answer: 1,
+    explanation: 'キリンのホームタップは、専用サーバーとビールサブスクを組み合わせた会員制の家庭用生ビールサービス。タップマルシェは業務用の小型サーバーサービス。ホッピンガレージはキリンのクラフトビール実験場。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q89', genre: '❺ 雑学', difficulty: '★★☆',
+    text: '以下の3つから導き出される商品ブランドを選べ。\n❶:1984年発売\n❷:ボストンラガー\n❸:独立戦争で活躍した人物名',
+    choices: ['サミュエル・アダムス', 'ファイヤー・ロック', 'フリッツ・メイタグ', 'ジェームス・ワルカー'],
+    answer: 0,
+    explanation: 'サミュエル・アダムスはアメリカ独立戦争の活動家（人物名）にちなんだボストンのクラフトビールブランド。代表作「ボストンラガー」は1984年発売。フリッツ・メイタグはアンカースチームビールの復活者。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q90', genre: '❺ 雑学', difficulty: '★★☆',
+    text: '伊勢角屋麦酒「ねこにひき」の説明文（白濁した外観、トロピカルジュースのようにフルーティーでジューシー、苦みを抑えた柔らかな飲み心地）から、このビアスタイルを選べ。',
+    choices: ['ニューイングランドIPA', 'ブリュットIPA', 'ウェストコーストIPA', 'ダブルIPA'],
+    answer: 0,
+    explanation: '白濁・ジューシー・低苦味の特徴はニューイングランドIPA（NEIPA）。ウェストコーストIPAは透明で苦味が強い。ブリュットIPAは辛口でドライ、ダブルIPAは高アルコール・高苦味が特徴。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q91', genre: '❺ 雑学', difficulty: '★★☆',
+    text: 'サッポロビールが2024年4月に東京・恵比寿に開業した「YEBISU BREWERY TOKYO」のタップルームで通年提供される主力ビールの名称を選べ。',
+    choices: ['エターナル', 'バイター・トリケン', 'エンドレス', 'インフィニティ'],
+    answer: 3,
+    explanation: 'YEBISU BREWERY TOKYOのタップルームで通年提供される主力ビールは「インフィニティ（INFINITY）」。恵比寿のヱビスビール発祥地に2024年4月にオープンしたブランド体験拠点。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q92', genre: '❺ 雑学', difficulty: '★☆☆',
+    text: '「ライジングサンペールエール」「スルガベイインペリアルIPA」「黒船ポーター」などを定番商品とするクラフトブルワリーを、次の選択肢より選べ。',
+    choices: ['スワンレイクビール', 'ベアードビール', 'ノースアイランドビール', 'サンクトガーレン'],
+    answer: 1,
+    explanation: 'ベアードビール（Baird Beer）は静岡県沼津市に本拠を置くクラフトブルワリー。アメリカ人のブライアン・ベアードが創業し、ライジングサンペールエールやスルガベイインペリアルIPAが看板商品。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q93', genre: '❺ 雑学', difficulty: '★☆☆',
+    text: '2023年のドイツのオクトーバーフェストの来場者数は過去最大であった。その人数について、次の選択肢より選べ。',
+    choices: ['約620万人', '約720万人', '約820万人', '約920万人'],
+    answer: 1,
+    explanation: '2023年のオクトーバーフェストの来場者数は約720万人で過去最多を更新。コロナ禍で2020・2021年は中止、2022年に再開され、2023年にはさらに盛り上がった。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q94', genre: '❺ 雑学', difficulty: '★☆☆',
+    text: 'ベアレン醸造所など( )県内の全クラフトビールメーカーが2024年4月10日に「( )クラフトビールアソシエーション」を立ち上げた。( )に入る県名を選べ。',
+    choices: ['青森', '岩手', '山梨', '静岡'],
+    answer: 1,
+    explanation: '岩手クラフトビールアソシエーションは2024年4月に設立。ベアレン醸造所（盛岡）、世嬉の一酒造、ブリューグッドなど岩手県内のクラフトビールメーカー6社が発起人。東北クラフトビールの盛り上がりを象徴する動き。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q95', genre: '❺ 雑学', difficulty: '★★★',
+    text: 'クラフトビールの銘柄について、地名に続く( )内の名称の組み合わせとして正しいものを選べ。\n大山( ❶ )\n常陸野( ❷ )\n秋田( ❸ )',
+    choices: [
+      '❶ビール、❷Ｇビール、❸あくらビール',
+      '❶Ｇビール、❷あくらビール、❸ネストビール',
+      '❶あくらビール、❷ネストビール、❸Ｇビール',
+      '❶Ｇビール、❷ネストビール、❸あくらビール'
+    ],
+    answer: 3,
+    explanation: '大山Gビール（鳥取）、常陸野ネストビール（茨城・木内酒造）、秋田あくらビール（秋田）が正解。フクロウのロゴで有名な常陸野ネストビールは特に覚えておこう。地名＋ブランド名のセットで整理！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q96', genre: '❺ 雑学', difficulty: '★★☆',
+    text: '次のタレントとTVCMのビールブランドの組み合わせが正しいものを選べ（2024年7月時点）。\n❶:山﨑賢人・上白石萌音・坂口憲二ら\n❷:堺雅人・山本耕史・奈緒\n❸:豊川悦司・常盤貴子・中条あやみ\n❹:芳根京子・松下洸平',
+    choices: [
+      '❶サントリー生ビール、❷パーフェクトサントリービール、❸キリン一番搾り糖質ゼロ、❹アサヒ生ビール',
+      '❶パーフェクトサントリービール、❷サントリー生ビール、❸アサヒ生ビール、❹キリン一番搾り糖質ゼロ',
+      '❶キリン一番搾り糖質ゼロ、❷パーフェクトサントリービール、❸サントリー生ビール、❹アサヒ生ビール',
+      '❶サントリー生ビール、❷アサヒ生ビール、❸キリン一番搾り糖質ゼロ、❹パーフェクトサントリービール'
+    ],
+    answer: 0,
+    explanation: '❶サントリー生ビール（山﨑賢人ら）、❷パーフェクトサントリービール（堺雅人ら）、❸キリン一番搾り糖質ゼロ（豊川悦司ら）、❹アサヒ生ビール（芳根京子・松下洸平）。CMタレントは変わりやすいので試験時点の情報要確認。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q97', genre: '❺ 雑学', difficulty: '★★☆',
+    text: 'クラフトビールの銘柄と醸造所が所在する県の組み合わせで正しいものを選べ。\n❶:オラホビール\n❷:ナギサビール\n❸:コエドビール',
+    choices: [
+      '❶長野県、❷和歌山県、❸埼玉県',
+      '❶長野県、❷愛知県、❸千葉県',
+      '❶静岡県、❷和歌山県、❸福岡県',
+      '❶山梨県、❷三重県、❸埼玉県'
+    ],
+    answer: 0,
+    explanation: 'オラホビールは長野県東御市、ナギサビールは和歌山県白浜町、コエドビールは埼玉県川越市が正解。コエドは「小江戸」川越にちなむ名前。クラフトビールの産地と銘柄はセットで覚えよう！'
+  },
+  {
+    type: 'single',
+    qNum: 'Q98', genre: '❺ 雑学', difficulty: '★☆☆',
+    text: '2024年5月に、気候変動対策で新品種の大麦を開発したと発表した日本のビールメーカーを、次の選択肢より選べ。',
+    choices: ['サントリー', 'キリン', 'アサヒ', 'サッポロ'],
+    answer: 3,
+    explanation: 'サッポロビールが2024年5月に高温・乾燥に強い新品種の大麦開発を発表。気候変動によるビール原料不足への対策として注目を集めた。原料の安定調達と持続可能性への取り組みは業界の重要テーマ。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q99', genre: '❺ 雑学', difficulty: '★★★',
+    text: '2023年6月に「バドライト」が20年以上維持した米国売上トップの座を失ったと報じられた。バドライトに替わり首位に浮上したとされるメキシコのビールブランドを選べ。',
+    choices: ['ラグニタス', 'ブルームーン', 'レフ', 'モデロ'],
+    answer: 3,
+    explanation: 'モデロ（Modelo Especial）がバドライトを抜いてアメリカ売上首位に。バドライトはLGBTQ+への支持表明をめぐる不買運動が影響したと言われる。モデロはABインベブのブランドで、メキシコビールの代表格。'
+  },
+  {
+    type: 'single',
+    qNum: 'Q100', genre: '❺ 雑学', difficulty: '★☆☆',
+    text: '日本クラフトビール業界団体連絡協議会（クラビ連）が制定し、2023年に日本記念日協会に認定・登録された「クラフトビールの日」を次の選択肢より選べ。',
+    choices: ['4月1日', '4月23日', '8月2日', '8月4日'],
+    answer: 1,
+    explanation: '「クラフトビールの日」は4月23日。ドイツの「聖ゲオルギウスの日」（4月23日）にちなんでいると言われる。また4（よ）2（に）3（さん）で「よいにさん（良い2・3杯）」という語呂合わせもある。'
+  },
+];
+
+// =============================
+// ゲーム状態
+// =============================
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+let groupAnswers = []; // グループ問題の回答状態
+
+// =============================
+// 画面切り替え
+// =============================
+function showScreen(screen) {
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('header').style.display = 'none';
+  document.getElementById('progress-bar-wrap').style.display = 'none';
+
+  if (screen === 'start') {
+    document.getElementById('start-screen').style.display = 'flex';
+  } else if (screen === 'quiz') {
+    document.getElementById('header').style.display = 'flex';
+    document.getElementById('progress-bar-wrap').style.display = 'block';
+    document.getElementById('main').style.display = 'flex';
+  } else if (screen === 'result') {
+    document.getElementById('result-screen').style.display = 'flex';
+  }
+}
+
+function startQuiz() {
+  currentIndex = 0;
+  score = 0;
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function retryQuiz() {
+  startQuiz();
+}
+
+// =============================
+// 問題数カウント（グループは複数問）
+// =============================
+function getTotalQuestions() {
+  let total = 0;
+  QUESTIONS.forEach(q => {
+    total += q.type === 'group' ? q.qs.length : 1;
+  });
+  return total;
+}
+
+function getQuestionIndexLabel() {
+  let count = 0;
+  for (let i = 0; i < currentIndex; i++) {
+    count += QUESTIONS[i].type === 'group' ? QUESTIONS[i].qs.length : 1;
+  }
+  return count + 1;
+}
+
+// =============================
+// 問題表示
+// =============================
+function renderQuestion() {
+  answered = false;
+  groupAnswers = [];
+
+  const q = QUESTIONS[currentIndex];
+  const total = getTotalQuestions();
+  const current = getQuestionIndexLabel();
+
+  // プログレス更新
+  document.getElementById('progress-text').textContent = `${current} / ${total}`;
+  document.getElementById('progress-bar').style.width = `${(current / total) * 100}%`;
+
+  // ビア子リセット
+  setBiako('normal', '問題を読んで、答えを選んでね！');
+
+  // 解説・次へボタン非表示
+  document.getElementById('explanation-area').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+
+  if (q.type === 'single') {
+    renderSingleQuestion(q);
+  } else {
+    renderGroupQuestion(q);
+  }
+}
+
+function renderSingleQuestion(q) {
+  document.getElementById('normal-question-area').style.display = 'block';
+  document.getElementById('group-question-area').style.display = 'none';
+
+  document.getElementById('genre-badge').textContent = q.genre;
+  document.getElementById('difficulty').textContent = q.difficulty;
+  document.getElementById('question-number').textContent = q.qNum;
+  document.getElementById('question-text').textContent = q.text;
+
+  const passage = document.getElementById('question-passage');
+  passage.style.display = 'none';
+
+  // 選択肢
+  const labels = ['A', 'B', 'C', 'D'];
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-label">${labels[i]}</span><span>${c}</span>`;
+    btn.onclick = () => selectAnswer(i, q.answer, q.explanation, q.difficulty);
+    choicesEl.appendChild(btn);
+  });
+}
+
+function renderGroupQuestion(q) {
+  document.getElementById('normal-question-area').style.display = 'none';
+  document.getElementById('group-question-area').style.display = 'block';
+
+  document.getElementById('genre-badge').textContent = q.genre;
+  document.getElementById('difficulty').textContent = '';
+  document.getElementById('question-passage-group').textContent = q.passage;
+
+  const groupQs = document.getElementById('group-questions');
+  groupQs.innerHTML = '';
+
+  const groupExpl = document.getElementById('group-explanation-area');
+  groupExpl.style.display = 'none';
+  // 既存の解説ブロックをクリア（ヘッダー以外）
+  const existingExpls = groupExpl.querySelectorAll('.group-explanation-block');
+  existingExpls.forEach(e => e.remove());
+
+  const labels = ['A', 'B', 'C', 'D'];
+
+  q.qs.forEach((subQ, qIdx) => {
+    const block = document.createElement('div');
+    block.className = 'group-q-block';
+    block.id = `group-block-${qIdx}`;
+
+    const label = document.createElement('div');
+    label.className = 'group-q-label';
+    label.textContent = `${subQ.qNum}　${subQ.difficulty}`;
+
+    const text = document.createElement('div');
+    text.className = 'group-q-text';
+    text.textContent = subQ.text;
+
+    const choicesDiv = document.createElement('div');
+    choicesDiv.className = 'group-choices';
+    choicesDiv.id = `group-choices-${qIdx}`;
+
+    subQ.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = `<span class="choice-label">${labels[i]}</span><span>${c}</span>`;
+      btn.onclick = () => selectGroupAnswer(qIdx, i, q.qs, q);
+      choicesDiv.appendChild(btn);
+    });
+
+    block.appendChild(label);
+    block.appendChild(text);
+    block.appendChild(choicesDiv);
+    groupQs.appendChild(block);
+
+    // 解説用ブロックをgroup-explanation-areaに追加
+    const explBlock = document.createElement('div');
+    explBlock.className = 'group-explanation-block';
+    explBlock.id = `group-expl-${qIdx}`;
+    const explHeader = document.createElement('div');
+    explHeader.className = 'group-explanation-header';
+    explHeader.textContent = `${subQ.qNum} の解説`;
+    explBlock.appendChild(explHeader);
+    const explText = document.createElement('div');
+    explText.textContent = subQ.explanation;
+    explBlock.appendChild(explText);
+    groupExpl.appendChild(explBlock);
+  });
+
+  groupAnswers = new Array(q.qs.length).fill(null);
+}
+
+// =============================
+// 通常問題：回答処理
+// =============================
+function selectAnswer(selected, correct, explanation, difficulty) {
+  if (answered) return;
+  answered = true;
+
+  const btns = document.querySelectorAll('#choices .choice-btn');
+  btns.forEach(btn => btn.disabled = true);
+
+  const isCorrect = selected === correct;
+  if (isCorrect) score++;
+
+  btns[selected].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) btns[correct].classList.add('reveal-correct');
+
+  // 解説表示
+  document.getElementById('explanation-text').textContent = explanation;
+  document.getElementById('explanation-area').style.display = 'block';
+
+  // ビア子リアクション
+  if (isCorrect) {
+    setBiako('happy', '正解！さすがウマ娘！🏆');
+  } else {
+    const diff = difficulty;
+    if (diff === '★☆☆') {
+      setBiako('cry', '難問だったね…でも次は大丈夫！');
+    } else {
+      setBiako('sad', 'あれ…違うよ。もう一回復習しよう！');
+    }
+  }
+
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+// =============================
+// グループ問題：回答処理
+// =============================
+function selectGroupAnswer(qIdx, selected, subQs, parentQ) {
+  if (groupAnswers[qIdx] !== null) return;
+  groupAnswers[qIdx] = selected;
+
+  const correct = subQs[qIdx].answer;
+  const isCorrect = selected === correct;
+  if (isCorrect) score++;
+
+  const choicesDiv = document.getElementById(`group-choices-${qIdx}`);
+  const btns = choicesDiv.querySelectorAll('.choice-btn');
+  btns.forEach(btn => btn.disabled = true);
+  btns[selected].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) btns[correct].classList.add('reveal-correct');
+
+  // 解説を表示
+  document.getElementById(`group-expl-${qIdx}`).style.display = 'block';
+
+  // ビア子
+  if (isCorrect) {
+    setBiako('happy', '正解！どんどんいこう！🍺');
+  } else {
+    setBiako('sad', 'う〜ん、惜しい！解説を確認しよう！');
+  }
+
+  // 全問回答したか確認
+  const allAnswered = groupAnswers.every(a => a !== null);
+  if (allAnswered) {
+    document.getElementById('group-explanation-area').style.display = 'block';
+    document.getElementById('next-btn').style.display = 'block';
+
+    // グループ全体のビア子コメント
+    const correctCount = groupAnswers.filter((a, i) => a === subQs[i].answer).length;
+    if (correctCount === subQs.length) {
+      setBiako('guts', `全問正解！完璧です！！🏆`);
+    } else if (correctCount === 0) {
+      setBiako('cry', `う〜…全部不正解。一緒に復習しよう！`);
+    } else {
+      setBiako('explanation', `${correctCount}/${subQs.length}正解！いい調子！`);
+    }
+  }
+}
+
+// =============================
+// 次の問題へ
+// =============================
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= QUESTIONS.length) {
+    showResult();
+  } else {
+    renderQuestion();
+    window.scrollTo(0, 0);
+  }
+}
+
+// =============================
+// リザルト画面
+// =============================
+function showResult() {
+  const total = getTotalQuestions();
+  const pct = Math.round((score / total) * 100);
+  const passed = score >= 70;
+
+  showScreen('result');
+
+  document.getElementById('result-score').innerHTML = `${score}<span> / ${total}点</span>`;
+
+  let biako, label, comment, labelColor;
+
+  if (pct >= 90) {
+    biako = 'guts';
+    label = '🏆 合格！最高得点！';
+    labelColor = '#FFCC00';
+    comment = `<strong>完璧です！！</strong><br>さすがウマ娘！有馬記念どころかジャパンカップも獲れます！ビア子、感激で震えています🍺`;
+  } else if (pct >= 70) {
+    biako = 'happy';
+    label = '✅ 合格！おめでとう！';
+    labelColor = '#FFCC00';
+    comment = `<strong>合格ライン突破！</strong><br>びあけん2級合格です！ビア子、誇らしいです！もう一周して満点を目指しましょう🏆`;
+  } else if (pct >= 60) {
+    biako = 'cry';
+    label = '😢 惜しい！もう少し！';
+    labelColor = '#fff';
+    comment = `<strong>あと少し！</strong><br>合格まで惜しかった…${70 - score}問足りなかったです。弱点ジャンルを重点的に復習してもう一周！`;
+  } else if (pct >= 50) {
+    biako = 'sad';
+    label = '📚 もっと特訓が必要！';
+    labelColor = '#fff';
+    comment = `<strong>うーん…</strong><br>まだまだ特訓が必要です！ビア子も反省して一緒に頑張ります。公式テキストと合わせて復習しよう！`;
+  } else {
+    biako = 'angry';
+    label = '💦 大特訓開始！';
+    labelColor = '#ff6666';
+    comment = `<strong>これは…！</strong><br>ビア子、怒ってるんじゃなくて…本気で心配してます！基礎から一緒にやり直しましょう！諦めたらそこで試合終了ですよ！`;
+  }
+
+  document.getElementById('result-biako').src = `biako_${biako}.png`;
+  document.getElementById('result-label').textContent = label;
+  document.getElementById('result-label').style.color = labelColor;
+  document.getElementById('result-comment').innerHTML = comment;
+}
+
+// =============================
+// ビア子表情切り替え
+// =============================
+function setBiako(expression, message) {
+  const img = document.getElementById('biako-img');
+  img.style.opacity = '0';
+  setTimeout(() => {
+    img.src = `biako_${expression}.png`;
+    img.style.opacity = '1';
+  }, 150);
+  document.getElementById('biako-bubble').textContent = message;
+}
+
+// 初期表示
+showScreen('start');
+</script>
+</body>
+</html>
