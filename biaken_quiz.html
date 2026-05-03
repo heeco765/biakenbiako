@@ -125,7 +125,7 @@ body{background:var(--cream);color:var(--text);font-family:"Noto Sans JP",sans-s
   transition:opacity .2s;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6));}
 #biako-bubble{background:var(--cream-card);border:2px solid var(--yellow-dim);
   border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:.83rem;
-  line-height:1.5;color:var(--text);flex:1;min-height:52px;display:flex;align-items:center;}
+  line-height:1.6;color:var(--text);flex:1;display:flex;align-items:center;}
 #meta-row{display:flex;align-items:center;gap:8px;}
 #genre-badge{display:inline-flex;align-items:center;background:var(--red);color:var(--yellow);
   font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.05em;}
@@ -158,12 +158,6 @@ body{background:var(--cream);color:var(--text);font-family:"Noto Sans JP",sans-s
   font-weight:700;letter-spacing:.05em;cursor:pointer;width:100%;display:none;
   animation:fadeIn .3s ease;-webkit-appearance:none;}
 #show-explanation-btn:active{background:#f5e8c8;}
-#explanation-area{display:none;animation:fadeIn .3s ease;}
-#explanation-box{background:var(--cream-card);border:2px solid var(--red);
-  border-radius:12px;padding:14px;}
-#explanation-header{font-family:"Oswald",sans-serif;font-size:.85rem;color:var(--red);
-  font-weight:700;margin-bottom:6px;letter-spacing:.05em;}
-#explanation-text{font-size:.83rem;line-height:1.7;color:var(--text);}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 #next-btn{background:var(--red);color:var(--yellow);font-family:"Oswald",sans-serif;
   font-size:1.1rem;font-weight:700;letter-spacing:.1em;border:none;border-radius:12px;
@@ -413,12 +407,6 @@ body{background:var(--cream);color:var(--text);font-family:"Noto Sans JP",sans-s
     </div>
     <div id="choices"></div>
     <button id="show-explanation-btn" onclick="showExplanation()">📖 解説を見る</button>
-    <div id="explanation-area">
-      <div id="explanation-box">
-        <div id="explanation-header">📖 解説</div>
-        <div id="explanation-text"></div>
-      </div>
-    </div>
   </div>
   <div id="group-question-area" style="display:none;">
     <div id="question-card-group">
@@ -1735,7 +1723,6 @@ function renderQuestion() {
   document.getElementById('progress-text').textContent = `${current} / ${total}`;
   document.getElementById('progress-bar').style.width = `${(current/total)*100}%`;
   setBiako('normal', randomMsg('question'));
-  document.getElementById('explanation-area').style.display = 'none';
   document.getElementById('show-explanation-btn').style.display = 'none';
   document.getElementById('next-btn').style.display = 'none';
   if (q.type === 'single') renderSingleQuestion(q);
@@ -1826,26 +1813,18 @@ function selectAnswer(selected, correct, explanation, difficulty, genre) {
   if (isCorrect) { currentExpression='happy'; setBiako('happy',randomMsg('correct')); }
   else if (difficulty==='★☆☆') { currentExpression='cry'; setBiako('cry',randomMsg('wrong_easy')); }
   else { currentExpression='sad'; setBiako('sad',randomMsg('wrong_normal')); }
-  document.getElementById('explanation-text').textContent = explanation;
+  pendingExplanation = explanation;
   document.getElementById('show-explanation-btn').style.display = 'block';
 }
 
-const BIAKO_EXPLANATION_MSGS = [
-  '解説を読んで、しっかり覚えよう！',
-  'ここ、試験に出るよ！よく読んでね。',
-  'ポイントをしっかりチェック！',
-  'なるほど、こういうことね！覚えた？',
-  '解説を読んだら次にいこう！',
-];
+// 解説テキストを一時保存
+let pendingExplanation = '';
 
 function showExplanation() {
   document.getElementById('show-explanation-btn').style.display = 'none';
-  document.getElementById('explanation-area').style.display = 'block';
   document.getElementById('next-btn').style.display = 'block';
-  // 上のビア子を解説モードに切り替え
-  const msg = BIAKO_EXPLANATION_MSGS[Math.floor(Math.random() * BIAKO_EXPLANATION_MSGS.length)];
-  setBiako('explanation', msg);
-  document.getElementById('explanation-area').scrollIntoView({behavior:'smooth',block:'nearest'});
+  // 吹き出しに解説テキストを表示、表情は解説モード
+  setBiako('explanation', pendingExplanation);
 }
 
 function selectGroupAnswer(qIdx, selected, subQs, parentQ) {
