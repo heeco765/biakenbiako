@@ -159,11 +159,8 @@ body{background:var(--cream);color:var(--text);font-family:"Noto Sans JP",sans-s
   animation:fadeIn .3s ease;-webkit-appearance:none;}
 #show-explanation-btn:active{background:#f5e8c8;}
 #explanation-area{display:none;animation:fadeIn .3s ease;}
-#explanation-inner{display:flex;gap:12px;align-items:flex-start;}
-#expl-biako-img{width:72px;height:72px;object-fit:contain;flex-shrink:0;
-  filter:drop-shadow(0 2px 6px rgba(0,0,0,.5));}
 #explanation-box{background:var(--cream-card);border:2px solid var(--red);
-  border-radius:12px;padding:14px;flex:1;}
+  border-radius:12px;padding:14px;}
 #explanation-header{font-family:"Oswald",sans-serif;font-size:.85rem;color:var(--red);
   font-weight:700;margin-bottom:6px;letter-spacing:.05em;}
 #explanation-text{font-size:.83rem;line-height:1.7;color:var(--text);}
@@ -417,12 +414,9 @@ body{background:var(--cream);color:var(--text);font-family:"Noto Sans JP",sans-s
     <div id="choices"></div>
     <button id="show-explanation-btn" onclick="showExplanation()">📖 解説を見る</button>
     <div id="explanation-area">
-      <div id="explanation-inner">
-        <img id="expl-biako-img" src="biako_normal.png" alt="ビア子">
-        <div id="explanation-box">
-          <div id="explanation-header">📖 解説</div>
-          <div id="explanation-text"></div>
-        </div>
+      <div id="explanation-box">
+        <div id="explanation-header">📖 解説</div>
+        <div id="explanation-text"></div>
       </div>
     </div>
   </div>
@@ -1833,7 +1827,6 @@ function selectAnswer(selected, correct, explanation, difficulty, genre) {
   else if (difficulty==='★☆☆') { currentExpression='cry'; setBiako('cry',randomMsg('wrong_easy')); }
   else { currentExpression='sad'; setBiako('sad',randomMsg('wrong_normal')); }
   document.getElementById('explanation-text').textContent = explanation;
-  document.getElementById('expl-biako-img').src = `biako_${currentExpression}.png`;
   document.getElementById('show-explanation-btn').style.display = 'block';
 }
 
