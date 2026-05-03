@@ -237,10 +237,31 @@ body{background:var(--cream);color:var(--text);font-family:"Noto Sans JP",sans-s
 #news-screen{padding-top:24px;}
 .news-title{font-family:"Oswald",sans-serif;font-size:1.3rem;color:var(--red);
   font-weight:700;letter-spacing:.08em;align-self:flex-start;}
-.news-dummy{background:var(--cream-card);border:2px solid var(--yellow-dim);
-  border-radius:14px;padding:24px;text-align:center;width:100%;
-  font-size:.88rem;color:#aaa;line-height:1.8;}
-.news-dummy strong{color:var(--red);font-size:1rem;}
+.news-source-badge{
+  align-self:flex-start;
+  font-size:.7rem;color:#888;
+  background:var(--cream-dark);border-radius:20px;padding:3px 10px;
+}
+#news-list{width:100%;display:flex;flex-direction:column;gap:10px;}
+.news-item{
+  background:var(--cream-card);border:2px solid var(--cream-dark);
+  border-left:3px solid var(--red);
+  border-radius:10px;padding:13px 14px;
+  text-decoration:none;color:var(--text);
+  display:block;transition:background .13s;
+}
+.news-item:active{background:var(--cream-dark);}
+.news-item-title{font-size:.85rem;font-weight:700;line-height:1.5;margin-bottom:4px;}
+.news-item-date{font-size:.7rem;color:#999;}
+#news-loading{
+  text-align:center;padding:32px 0;font-size:.85rem;color:#aaa;width:100%;
+}
+#news-error{
+  background:var(--cream-card);border:2px solid var(--cream-dark);
+  border-radius:12px;padding:20px;text-align:center;
+  font-size:.83rem;color:#aaa;width:100%;line-height:1.8;
+}
+#news-error a{color:var(--red);}
 
 /* ========== オープニング画面 ========== */
 #opening-screen{width:100%;max-width:480px;padding:32px 16px 40px;
@@ -451,11 +472,9 @@ body{background:var(--cream);color:var(--text);font-family:"Noto Sans JP",sans-s
 <!-- ===== ニュース画面 ===== -->
 <div id="news-screen" class="screen">
   <div class="news-title">📰 ビールニュース</div>
-  <div class="news-dummy">
-    <strong>🍺 COMING SOON</strong><br><br>
-    最新のビール関連ニュースを<br>
-    近日公開予定！<br><br>
-    <span style="font-size:.75rem;">クラフトビール・法改正・新商品など</span>
+  <div class="news-source-badge">提供: My CRAFT BEER</div>
+  <div id="news-list">
+    <div id="news-loading">🍺 ニュースを取得中...</div>
   </div>
   <button class="back-link" onclick="showScreen('home')">← ホームへ戻る</button>
 </div>
@@ -1496,6 +1515,9 @@ function showScreen(name) {
   } else if (name === 'stats') {
     renderStats();
     document.getElementById('stats-screen').classList.add('active');
+  } else if (name === 'news') {
+    document.getElementById('news-screen').classList.add('active');
+    fetchNews();
   } else {
     const el = document.getElementById(`${name}-screen`);
     if (el) el.classList.add('active');
@@ -1607,8 +1629,54 @@ function renderStats() {
 }
 
 // =============================
-// ランダム・問題セット
+// ニュース取得（rss2json経由）
 // =============================
+const NEWS_RSS = 'https://mycraftbeers.com/category/news/feed';
+const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+let newsCache = null;
+
+function fetchNews() {
+  const list = document.getElementById('news-list');
+  // キャッシュあればそのまま
+  if (newsCache) { renderNewsList(newsCache); return; }
+  list.innerHTML = '<div id="news-loading">🍺 ニュースを取得中...</div>';
+  fetch(RSS2JSON + encodeURIComponent(NEWS_RSS))
+    .then(r => r.json())
+    .then(data => {
+      if (data.status !== 'ok' || !data.items?.length) throw new Error('empty');
+      newsCache = data.items.slice(0, 15);
+      renderNewsList(newsCache);
+    })
+    .catch(() => {
+      list.innerHTML = `<div id="news-error">
+        ニュースの取得に失敗しました。<br>
+        <a href="https://mycraftbeers.com/category/news" target="_blank" rel="noopener">
+          🌐 My CRAFT BEER で直接読む →
+        </a>
+      </div>`;
+    });
+}
+
+function renderNewsList(items) {
+  const list = document.getElementById('news-list');
+  list.innerHTML = items.map(item => {
+    const date = item.pubDate
+      ? new Date(item.pubDate).toLocaleDateString('ja-JP', {month:'numeric',day:'numeric'})
+      : '';
+    const title = item.title || '（タイトルなし）';
+    const url = item.link || '#';
+    return `<a class="news-item" href="${url}" target="_blank" rel="noopener">
+      <div class="news-item-title">${escapeHtml(title)}</div>
+      <div class="news-item-date">${date}</div>
+    </a>`;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length-1; i > 0; i--) {
@@ -1769,10 +1837,21 @@ function selectAnswer(selected, correct, explanation, difficulty, genre) {
   document.getElementById('show-explanation-btn').style.display = 'block';
 }
 
+const BIAKO_EXPLANATION_MSGS = [
+  '解説を読んで、しっかり覚えよう！',
+  'ここ、試験に出るよ！よく読んでね。',
+  'ポイントをしっかりチェック！',
+  'なるほど、こういうことね！覚えた？',
+  '解説を読んだら次にいこう！',
+];
+
 function showExplanation() {
   document.getElementById('show-explanation-btn').style.display = 'none';
   document.getElementById('explanation-area').style.display = 'block';
   document.getElementById('next-btn').style.display = 'block';
+  // 上のビア子を解説モードに切り替え
+  const msg = BIAKO_EXPLANATION_MSGS[Math.floor(Math.random() * BIAKO_EXPLANATION_MSGS.length)];
+  setBiako('explanation', msg);
   document.getElementById('explanation-area').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
